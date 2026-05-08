@@ -1,4 +1,4 @@
--- [[ BRAINROT & BASE X-RAY - FIX BY GEMINI ]] --
+-- [[ BRAINROT & BASE X-RAY - FIX FINAL ]] --
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -8,18 +8,15 @@ local SliderButton = Instance.new("TextButton")
 local SliderLabel = Instance.new("TextLabel")
 local Title = Instance.new("TextLabel")
 
--- Configuração da Interface (Visual Clean e Transparente)
+-- Interface
 ScreenGui.Parent = game.CoreGui
-ScreenGui.Name = "Xray_Fix"
-
-MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BackgroundTransparency = 0.6
 MainFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
 MainFrame.Size = UDim2.new(0, 220, 0, 110)
 MainFrame.Active = true
-MainFrame.Draggable = true -- Menu Arrastável
+MainFrame.Draggable = true 
 
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 25)
@@ -29,7 +26,6 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 12
 
--- Botão ON/OFF
 ToggleBtn.Parent = MainFrame
 ToggleBtn.Position = UDim2.new(0.05, 0, 0.3, 0)
 ToggleBtn.Size = UDim2.new(0.9, 0, 0, 35)
@@ -40,7 +36,6 @@ ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.TextSize = 14
 
--- Slider
 SliderFrame.Parent = MainFrame
 SliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
 SliderFrame.Size = UDim2.new(0.7, 0, 0, 6)
@@ -62,10 +57,10 @@ SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SliderLabel.Font = Enum.Font.Gotham
 SliderLabel.TextSize = 12
 
--- LÓGICA DE FILTRO (BRAINROTS E BASES)
+-- Lógica
 local isActive = true
 local currentTrans = 1
-local dragging = false -- Trava de segurança para o slider
+local dragging = false 
 
 local alvos = {"Brain", "Drop", "Base", "Tycoon", "Object", "Collection"}
 
@@ -73,9 +68,7 @@ local function eAlvo(obj)
     local nome = obj.Name:lower()
     local paiNome = (obj.Parent and obj.Parent.Name:lower()) or ""
     for _, termo in pairs(alvos) do
-        if nome:find(termo:lower()) or paiNome:find(termo:lower()) then
-            return true
-        end
+        if nome:find(termo:lower()) or paiNome:find(termo:lower()) then return true end
     end
     return false
 end
@@ -91,7 +84,6 @@ local function apply()
     end
 end
 
--- Botão Toggle
 ToggleBtn.MouseButton1Click:Connect(function()
     isActive = not isActive
     ToggleBtn.Text = isActive and "TRANSPARENCY: ON" or "TRANSPARENCY: OFF"
@@ -106,14 +98,16 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- LÓGICA CORRIGIDA DO SLIDER (SÓ MOVE SE SEGURAR)
+-- LÓGICA DO SLIDER CORRIGIDA --
 local UIS = game:GetService("UserInputService")
 
-SliderButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-    end
-end)
+-- Ativa o arraste se clicar no botão OU na barra
+local function startDragging()
+    dragging = true
+end
+
+SliderButton.MouseButton1Down:Connect(startDragging)
+-- SliderFrame.MouseButton1Down não funciona direto em Frames, então usamos InputBegan no botão.
 
 UIS.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -126,6 +120,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
         local mousePos = UIS:GetMouseLocation().X
         local framePos = SliderFrame.AbsolutePosition.X
         local frameSize = SliderFrame.AbsoluteSize.X
+        -- Calcula o percentual baseado na posição do mouse
         local percent = math.clamp((mousePos - framePos) / frameSize, 0, 1)
         
         SliderButton.Position = UDim2.new(percent, -7, -0.5, 0)
@@ -136,15 +131,11 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
--- Auto-apply para novos itens
 game.Workspace.DescendantAdded:Connect(function(v)
     task.wait(0.2)
     if isActive and eAlvo(v) then
-        if v:IsA("BasePart") or v:IsA("MeshPart") then
-            v.Transparency = currentTrans
-        end
+        if v:IsA("BasePart") or v:IsA("MeshPart") then v.Transparency = currentTrans end
     end
 end)
 
 apply()
-print("Script Ajustado Carregado!")
