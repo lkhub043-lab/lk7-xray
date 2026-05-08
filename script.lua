@@ -1,4 +1,4 @@
--- [[ MENU ALVO: APENAS BRAINROTS E BASES ]] --
+-- [[ BRAINROT & BASE X-RAY - FIX BY GEMINI ]] --
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -6,23 +6,35 @@ local ToggleBtn = Instance.new("TextButton")
 local SliderFrame = Instance.new("Frame")
 local SliderButton = Instance.new("TextButton")
 local SliderLabel = Instance.new("TextLabel")
+local Title = Instance.new("TextLabel")
 
--- Configuração da Interface
+-- Configuração da Interface (Visual Clean e Transparente)
 ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "Xray_Fix"
+
+MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BackgroundTransparency = 0.6
-MainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
 MainFrame.Size = UDim2.new(0, 220, 0, 110)
 MainFrame.Active = true
-MainFrame.Draggable = true 
+MainFrame.Draggable = true -- Menu Arrastável
 
--- Botão de Ligar/Desligar
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 25)
+Title.BackgroundTransparency = 1
+Title.Text = "BRAINROT X-RAY"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 12
+
+-- Botão ON/OFF
 ToggleBtn.Parent = MainFrame
-ToggleBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
-ToggleBtn.Size = UDim2.new(0.9, 0, 0, 40)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0.3, 0)
+ToggleBtn.Size = UDim2.new(0.9, 0, 0, 35)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ToggleBtn.BackgroundTransparency = 0.3
+ToggleBtn.BackgroundTransparency = 0.4
 ToggleBtn.Text = "TRANSPARENCY: ON"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.Font = Enum.Font.GothamBold
@@ -50,18 +62,16 @@ SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SliderLabel.Font = Enum.Font.Gotham
 SliderLabel.TextSize = 12
 
--- LÓGICA DE FILTRO --
-
+-- LÓGICA DE FILTRO (BRAINROTS E BASES)
 local isActive = true
 local currentTrans = 1
+local dragging = false -- Trava de segurança para o slider
 
--- Nomes de pastas ou modelos que o script vai afetar
 local alvos = {"Brain", "Drop", "Base", "Tycoon", "Object", "Collection"}
 
 local function eAlvo(obj)
     local nome = obj.Name:lower()
     local paiNome = (obj.Parent and obj.Parent.Name:lower()) or ""
-    
     for _, termo in pairs(alvos) do
         if nome:find(termo:lower()) or paiNome:find(termo:lower()) then
             return true
@@ -81,10 +91,10 @@ local function apply()
     end
 end
 
+-- Botão Toggle
 ToggleBtn.MouseButton1Click:Connect(function()
     isActive = not isActive
     ToggleBtn.Text = isActive and "TRANSPARENCY: ON" or "TRANSPARENCY: OFF"
-    
     if not isActive then
         for _, obj in pairs(game.Workspace:GetDescendants()) do
             if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and eAlvo(obj) then
@@ -96,27 +106,37 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Slider Drag
-local dragging = false
-SliderButton.MouseButton1Down:Connect(function() dragging = true end)
-game:GetService("UserInputService").InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+-- LÓGICA CORRIGIDA DO SLIDER (SÓ MOVE SE SEGURAR)
+local UIS = game:GetService("UserInputService")
+
+SliderButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
 end)
 
 game:GetService("RunService").RenderStepped:Connect(function()
     if dragging then
-        local mousePos = game:GetService("UserInputService"):GetMouseLocation().X
+        local mousePos = UIS:GetMouseLocation().X
         local framePos = SliderFrame.AbsolutePosition.X
         local frameSize = SliderFrame.AbsoluteSize.X
         local percent = math.clamp((mousePos - framePos) / frameSize, 0, 1)
+        
         SliderButton.Position = UDim2.new(percent, -7, -0.5, 0)
         currentTrans = percent
         SliderLabel.Text = math.floor(percent * 100) .. "%"
+        
         if isActive then apply() end
     end
 end)
 
--- Auto-apply para novos itens que nascerem
+-- Auto-apply para novos itens
 game.Workspace.DescendantAdded:Connect(function(v)
     task.wait(0.2)
     if isActive and eAlvo(v) then
@@ -127,3 +147,4 @@ game.Workspace.DescendantAdded:Connect(function(v)
 end)
 
 apply()
+print("Script Ajustado Carregado!")
